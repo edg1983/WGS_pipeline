@@ -1,0 +1,62 @@
+Bootstrap: docker
+From: ubuntu:bionic
+
+%setup
+    mkdir -p ${SINGULARITY_ROOTFS}/resources
+    mkdir -p ${SINGULARITY_ROOTFS}/opt/SV_annotation
+
+%environment
+    SHELL=/bin/bash
+    PATH=$PATH:/usr/local/bin:/opt/root/bin
+    LC_ALL=C.UTF-8
+
+%files
+    resources/SV.annot_filter/* /resources
+    tools/SV.annot_filter/* /opt/SV_annotation
+
+%help
+    SV filtering and annotation tools.
+    
+    Note that all resources needed for GRCh38 are included with the container in /resources
+    A configuration file is provided in the same folder
+
+%post
+    apt-get update
+    apt-get -y install apt-transport-https zlib1g-dev libssl-dev libcurl4-openssl-dev liblzma-dev libbz2-dev build-essential wget cmake gcc language-pack-en-base python3 python3-pip make
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+    
+    ## Install bcftools
+    cd /opt
+    wget https://github.com/samtools/bcftools/releases/download/1.10.2/bcftools-1.10.2.tar.bz2
+    tar -jxvf bcftools-1.10.2.tar.bz2
+    rm bcftools-1.10.2.tar.bz2
+    cd bcftools-1.10.2
+    ./configure
+    make
+    make install 
+
+    ## Install bgzip and tabix
+    cd htslib-1.10.2
+    ./configure
+    make
+    make install
+    
+    ## Install bedtools
+    cd /opt
+    mkdir bedtools && cd bedtools
+    wget https://github.com/arq5x/bedtools2/releases/download/v2.29.2/bedtools.static.binary
+    chmod a+x bedtools.static.binary
+    ln --symbolic --force /opt/bedtools/bedtools.static.binary /usr/local/bin/bedtools
+    
+    ## Install python modules and create link
+    pip3 install --upgrade setuptools
+    pip3 install Cython cytoolz toolz
+    pip3 install pandas cyvcf2 
+    
+    ## Create links to bin
+    cd /opt/SV_annotation
+    chmod a+x *
+    ln --symbolic --force /opt/SV_annotation/SV_annotation.py /usr/local/bin
+    ln --symbolic --force /opt/SV_annotation/Variants_filters.sh /usr/local/bin
+    ln --symbolic --force /opt/SV_annotation/FilterByValue.py /usr/local/bin
+    ln --symbolic --force /opt/SV_annotation/FixGQfield.py /usr/local/bin
