@@ -1,0 +1,105 @@
+---
+title: "QC bam report"
+author: "Edoardo Giacopuzzi"
+date: "10/01/2020"
+output:
+  html_document:
+    dev: 'svg'
+---
+
+```{r loadlib, echo=FALSE}
+library(ggplot2)
+library(ggrepel)
+library(knitr)
+library(gridExtra)
+library(plotly)
+opts_chunk$set(dev='CairoPNG')
+
+#load("QC_bam.Rdata")
+```
+
+<br>
+
+## Coverage report
+
+#### Total samples in this report: `r length(files)`
+#### Mean coverage range: `r min(cov_summary$mean_cov)` - `r max(cov_summary$mean_cov)`
+
+### Mean coverage distribution
+
+```{r cummeanplot, warning=FALSE, echo=FALSE, fig.height=5, fig.width=5}
+ggplotly( 
+  ggplot(cov_summary, aes(x="Mean coverage",y=mean_cov)) + geom_jitter(width=0.1) + labs(x="",y="Coverage")
+)
+```
+
+### Cumulative coverage distribution
+Vertical dashed lines represent 10X and 20X coverage, horizontal dashed line represents 0.9 fraction
+
+```{r cumcovplot, warning=FALSE, echo=FALSE, fig.height=7, fig.width=7}
+ggplotly (
+  ggplot(cumcov, aes(x=V2,y=V3,color=sample)) + geom_line() + geom_vline(xintercept = c(10,20), linetype="dashed") + geom_hline(yintercept = 0.90, linetype="dashed") + lims(x=c(0,200)) + labs(x="Coverage", y="Fraction of bases covered \u2265 X")
+)
+```
+
+### Detailed coverage stats
+
+```{r covsumtab, echo=FALSE}
+cov_summary <- cov_summary[order(cov_summary$cov_10X),]
+kable(cov_summary, caption="Summary of coverage stats", row.names=F, full_width=F)
+```
+
+<br>
+---
+
+## Mapping report
+
+#### Pct mapping range: `r min(mapstats_agg$PCT_MAPPED)` - `r max(mapstats_agg$PCT_MAPPED)`
+
+### Mapped reads per sample
+
+```{r summaptab, echo=FALSE}
+summaptab <- mapstats_agg[mapstats_agg$group == "Total",]
+summaptab <- summaptab[,c(1:3,5:7)]
+colnames(summaptab)[1] <- "SAMPLE"
+kable(summaptab, caption="Mapping statistics", row.names=F, full_width=F)
+```
+
+### Mapped reads per chromosome
+
+```{r mapperchr, echo=FALSE}
+panel1 <- ggplot(mapstats[mapstats$CHR != "*" & mapstats$CHR != "chrM",], aes(x=factor(CHR, levels=std_chrs), y=MAPPED)) + geom_boxplot() + theme(axis.text.x = element_text(angle=45, hjust=1)) + labs(x="", y="Reads count")
+panel2 <- ggplot(mapstats[mapstats$CHR != "*" & mapstats$CHR != "chrM",], aes(x=factor(CHR, levels=std_chrs), y=MAPPED/(LENGTH/1000000))) + geom_boxplot() + theme(axis.text.x = element_text(angle=45, hjust=1)) + labs(x="", y="Normalized read count (reads/Mbp)")
+grid.arrange(panel1,panel2,top="Distribution of mapped reads across Chrs")
+```
+
+<br>
+---
+
+## Duplicated reads and paired reads
+
+#### Pct duplicated reads: `r min(flagstats$pct_dup)` - `r max(flagstats$pct_dup)`
+#### Pct properly paired reads: `r min(flagstats$pct_paired)` - `r max(flagstats$pct_paired)`
+
+<br>
+
+```{r sumduptab, echo=FALSE}
+colnames(flagstats)<- c("SAMPLE","Mapped reads", "duplicated reads","properly paired reads","% duplicated", "% properly paired")
+kable(flagstats, caption="Duplication and paired reads stats", row.names=F, full_width=F)
+```
+
+<br>
+---
+
+## Sex check report
+
+#### Concordant sex: `r nrow(sex_check[sex_check$checkSex_result =="CONCORDANT",])`
+#### Discordant sex: `r nrow(sex_check[sex_check$checkSex_result =="DISCORDANT",])`
+#### Missing sex imputed: `r nrow(sex_check[sex_check$checkSex_result =="IMPUTED",])`
+#### Undetermined samples: `r nrow(sex_check[sex_check$imputed_Sex == 0,])`
+
+```{r sexplot, echo=FALSE}
+ggplotly(
+  ggplot(sex_check, aes(x=Xto1_ratio,y=Yto1_ratio,color=as.factor(Sex))) + geom_point() + geom_hline(yintercept = 0.3, linetype="dashed") + geom_vline(xintercept = 0.7, linetype="dashed")+ labs(color="Reported sex") + annotate(geom="text",x=0.45, y=0.6, label="MALES") + annotate(geom="text",x=1.15, y=0, label="FEMALES") +  lims(y=c(0,0.6), x=c(0.4,1.2))
+)
+```
