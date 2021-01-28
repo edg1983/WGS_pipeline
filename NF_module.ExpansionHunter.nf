@@ -4,10 +4,10 @@ nextflow.enable.dsl=2
 */
 
 params.input = "input.txt" /* tab-separated file: sampleID, sex(male/female), bamfile */
-params.exphunter_folder = "ExpHunter" /* output directory containing results */
+params.out_folder = "ExpHunter" /* output directory containing results */
 params.ref="/well/gel/HICF2/ref/genomes/GRCh38/bwakit/hs38DH.fa"
 
-output_exphunter = file("$params.exphunter_folder")
+output_exphunter = file("$params.out_folder")
 output_exphunter.mkdirs()
 
 workflow {
@@ -16,7 +16,7 @@ workflow {
     =======================================
     This pipeline works for hg38 only
     input file  (--input)               : ${params.input}
-    outdir      (--exphunter_folder)    : ${params.exphunter_folder}
+    outdir      (--out_folder)          : ${params.out_folder}
     var catalog (--exphunter_catalog)   : ${params.exphunter_catalog}
     """
     .stripIndent()
@@ -50,7 +50,6 @@ workflow ExpansionHunter {
 }
 
 process exphunter_call {
-    container '/well/gel/HICF2/software/singularity/ExpansionHunter-v3.2.2.sif'
     label 'singlecore'
     publishDir "$output_exphunter", mode: 'copy'
 
@@ -75,7 +74,6 @@ process exphunter_call {
 }
 
 process compress_vcf {
-    container '/well/gel/HICF2/software/singularity/bcftools-v1.10.2.sif'
     label 'singlecore'
 
     input:
@@ -92,7 +90,6 @@ process compress_vcf {
 }
 
 process merge_vcf {
-    container '/well/gel/HICF2/software/singularity/bcftools-v1.10.2.sif'
     label 'singlecore'
     publishDir "$output_exphunter", mode: 'copy'
 

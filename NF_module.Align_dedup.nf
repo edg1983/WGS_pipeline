@@ -6,12 +6,12 @@ nextflow.enable.dsl=2
 */
 
 params.input = 'input_file.txt'
-params.bam_folder = "BAM"
+params.out_folder = "BAM"
 params.ref="/well/gel/HICF2/ref/genomes/GRCh38/GCA_000001405.15_GRCh38_full_plus_hs38d1_analysis_set.fna"
 /* note that bwa index file and .alt file must be available together with the
 ref genome fasta in the same location */
 
-output_bam = file(params.bam_folder)
+output_bam = file(params.out_folder)
 output_bam.mkdirs()
 
 workflow {
@@ -21,7 +21,7 @@ workflow {
     This pipeline works for hg38 only
     input file  (--input)       : ${params.input}
     genome      (--ref)         : ${params.ref}
-    outdir      (--bam_folder)  : ${params.bam_folder}
+    outdir      (--out_folder)  : ${params.out_folder}
     """
     .stripIndent()
 
@@ -57,7 +57,6 @@ workflow align_dedup {
 }
 
 process singlePartAlign {
-    container '/well/gel/HICF2/software/singularity/AlignDedup-v1.0.sif'
     label 'highcores'
     
     input:
@@ -77,7 +76,6 @@ process singlePartAlign {
 }
 
 process mergeBams {
-    container '/well/gel/HICF2/software/singularity/AlignDedup-v1.0.sif'
     label 'highcores'
 
     input:
@@ -97,7 +95,6 @@ process mergeBams {
 }
 
 process deduplicate {
-    container '/well/gel/HICF2/software/singularity/AlignDedup-v1.0.sif'
     label 'lowcores'
 
     publishDir "${params.bam_folder}", mode: 'copy', pattern: "*.log"
@@ -118,7 +115,6 @@ process deduplicate {
 }
 
 process sortBams {
-    container '/well/gel/HICF2/software/singularity/AlignDedup-v1.0.sif'
     label 'highcores'
     publishDir "${params.bam_folder}", mode: 'copy', pattern: "*.bam*"
 

@@ -1,15 +1,15 @@
 nextflow.enable.dsl=2
 
 params.input = 'input_file.txt'
-params.famid = 'family'
+params.cohort_id = 'family'
 params.ped = 'input.ped'
-params.output = 'output'
-params.qc_folder = "${params.output}/QC"
-params.bam_folder = "${params.output}/BAM"
-params.vcf_folder = "${params.output}/VCF"
-params.sv_folder = "${params.output}/SV"
-params.roh_folder = "${params.output}/ROH"
-params.exphunter_folder = "${params.output}/ExpHunter"
+params.out_folder = 'output'
+params.qc_folder = "${params.out_folder}/QC"
+params.bam_folder = "${params.out_folder}/BAM"
+params.vcf_folder = "${params.out_folder}/VCF"
+params.sv_folder = "${params.out_folder}/SV"
+params.roh_folder = "${params.out_folder}/ROH"
+params.exphunter_folder = "${params.out_folder}/ExpHunter"
 params.mode = "WGS"
 
 params.help = false
@@ -26,7 +26,8 @@ println """\
                                 Note that bwa index files are supposed to be available
                                 in the same folder with default extensions
     --mode WGS/WES          :   Set running mode for WES or WGS
-    --output outdir         :   Output folder. A series of sub-folder will be created
+    --cohort_id yourid      :   This is cohort id that is used as name for all merged files
+    --out_folder outdir     :   Output folder. A series of sub-folder will be created
     """
     .stripIndent()
 exit 1
@@ -40,21 +41,28 @@ log.info """\
     mode        : ${params.mode}
     input file  : ${params.input}
     ped file    : ${params.ped}
+    cohort id   : ${params.cohort_id}
     genome      : ${params.ref}
     chrs folder : ${params.chrs_folder}
-    outdir      : ${params.output}
+    outdir      : ${params.out_folder}
     ===========================================
     """
     .stripIndent()
 
-include { align_dedup } from "./NF_module.Align_dedup.nf"
-include { QC_bam } from "./NF_module.QC_bam.nf"
-include { small_vars_call } from "./NF_module.Call_vars.nf"
-include { SV_vars_call } from "./NF_module.SV_calls.nf"
-include { ROH_detection } from "./NF_module.bcftools_ROH.nf"
-include { ExpansionHunter } from "./NF_module.ExpansionHunter.nf"
+include { align_dedup } from "./NF_module.Align_dedup.nf" addParams(out_folder: "${params.bam_folder}")
+include { QC_bam } from "./NF_module.QC_bam.nf" addParams(out_folder: "${params.qc_folder}")
 
-output_dir = file(params.output)
+include { deepvariant } from "./NF_module.deepvariant.nf" addParams(out_folder: "${params.vcf_folder}/single_vcf")
+include { merge_gvcfs } from "./NF_module.merge_gvcfs.nf" addParams(out_folder: "${params.vcf_folder}/merged_vcf")
+include { process_deepvariant_vcf } from "./NF_module.process_deepvariant_vcf.nf" addParams(out_folder: "${params.vcf_folder}/processed_vcfs")
+
+include { SV_singlesample } from "./NF_module.SV_singlesample.nf" addParams(out_folder: "${params.sv_folder}/raw_data")
+include { SV_mergesamples } from "./NF_module.SV_mergesamples.nf" addParams(out_folder: "${params.sv_folder}/merged_vcf")
+
+include { ROH_detection } from "./NF_module.bcftools_ROH.nf" addParams(out_folder: "${params.roh_folder}")
+include { ExpansionHunter } from "./NF_module.ExpansionHunter.nf" addParams(out_folder: "${params.exphunter_folder}")
+
+output_dir = file(params.out_folder)
 output_dir.mkdirs()
 
 workflow {
@@ -87,11 +95,14 @@ workflow {
     align_dedup(fastqfiles, genome_data)
     QC_bam(align_dedup.out.bamfiles, file(params.regions), file(params.somalier_data), ref_genome)
     
-    small_vars_call(align_dedup.out.bamfiles)
+    deepvariant(ref_genome, align_dedup.out.bamfiles)
+    merge_gvcfs(deepvariant.out.gvcfs.collect())
+    process_deepvariant_vcf(merge_gvcfs.out, ref_genome)
 
-    SV_vars_call(align_dedup.out.allbams, ref_genome, chrs_folder, sex_definitions)
+    SV_singlesample(align_dedup.out.allbams, ref_genome, chrs_folder)
+    SV_mergesamples(SV_singlesample.out.root_files, SV_singlesample.out.vcfgt_files, sex_definitions)
 
-    ROH_detection(small_vars_call.out.pass_vcf, AF_file, genetic_maps)
+    ROH_detection(process_deepvariant_vcf.out.pass_vcf, AF_file, genetic_maps)
 
     exp_hunter_sex = Channel
                 .from(pedfile)

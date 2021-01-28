@@ -6,9 +6,9 @@ nextflow.enable.dsl=2
 */
 
 params.vcf_file = "vcf_file.vcf.gz"
-params.roh_folder = "ROH" /* output directory containing for ROH files */
+params.out_folder = "ROH" /* output directory containing for ROH files */
 
-output_roh = file("$params.roh_folder")
+output_roh = file("$params.out_folder")
 output_roh.mkdirs()
 
 workflow {
@@ -17,7 +17,7 @@ workflow {
     =====================================
     This pipeline works for hg38 only
     input VCF       (--vcf_file)    : ${params.vcf_file}
-    outdir          (--roh_folder)  : ${params.roh_folder}
+    outdir          (--out_folder)  : ${params.out_folder}
     AF file         (--roh_AFfile)  : ${params.roh_AFfile}
     """
     .stripIndent()
@@ -59,7 +59,6 @@ process getSampleIDs {
 }
 
 process bcftools_ROH {
-    container '/well/gel/HICF2/software/singularity/bcftools-v1.10.2.sif'
     label 'singlecore'
     publishDir "$output_roh", mode: 'copy'
 

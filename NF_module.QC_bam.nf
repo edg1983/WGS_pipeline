@@ -9,13 +9,13 @@ nextflow.enable.dsl=2
 */
 
 params.bam_folder = "BAM" /* directory containing bam files */
-params.qc_folder = "QC" /* output folder for QC files */
+params.out_folder = "QC" /* output folder for QC files */
 params.ped = "input.ped"
 params.ref = "/well/gel/HICF2/ref/genomes/GRCh38/bwakit/hs38DH.fa"
 
-output_somalier = file("${params.qc_folder}/somalier")
-output_files = file("${params.qc_folder}/files")
-output_reports = file("${params.qc_folder}/reports")
+output_somalier = file("${params.out_folder}/somalier")
+output_files = file("${params.out_folder}/files")
+output_reports = file("${params.out_folder}/reports")
 output_reports.mkdirs()
 output_files.mkdirs()
 output_somalier.mkdirs()
@@ -27,7 +27,7 @@ workflow {
     This pipeline works for hg38 only
     BAMs file dir   (--bam_folder)  : ${params.bam_folder}
     ped file        (--ped)         : ${params.ped}
-    outdir          (--qc_folder)   : ${params.qc_folder}
+    outdir          (--out_folder)  : ${params.out_folder}
     applied QC                      : fastQC, somalier, flagstats, coverage
     """
     .stripIndent()
@@ -63,7 +63,6 @@ workflow QC_bam {
 }
 
 process fastqc {
-    container '/well/gel/HICF2/software/singularity/QCbam-v1.0.sif'
     label 'singlecore'
     publishDir "$output_files", mode: 'copy'
 
@@ -80,7 +79,6 @@ process fastqc {
 }
 
 process coverage {
-    container '/well/gel/HICF2/software/singularity/QCbam-v1.0.sif'
     label 'lowcores'
     publishDir "$output_files", mode: 'copy'
 
@@ -110,7 +108,6 @@ process coverage {
 }
 
 process map_flag_stat {
-    container '/well/gel/HICF2/software/singularity/QCbam-v1.0.sif'
     label 'lowcores'
     publishDir "$output_files", mode: 'copy'
 
@@ -128,7 +125,6 @@ process map_flag_stat {
 }
 
 process somalier {
-    container '/well/gel/HICF2/software/singularity/QCbam-v1.0.sif'
     label 'singlecore'
     publishDir "$output_somalier", mode: 'copy', pattern: "*.somalier"
 
@@ -147,7 +143,6 @@ process somalier {
 }
 
 process sex_and_relatedness {
-    container '/well/gel/HICF2/software/singularity/QCbam-v1.0.sif'
     label 'singlecore'
     publishDir "$output_files", mode: 'copy', pattern: '*.tsv'
     publishDir "$output_reports", mode: 'copy', pattern: '*.html'
@@ -166,7 +161,6 @@ process sex_and_relatedness {
 }
 
 process ancestry {
-    container '/well/gel/HICF2/software/singularity/QCbam-v1.0.sif'
     label 'singlecore'
     publishDir "$output_files", mode: 'copy', pattern: '*.tsv'
     publishDir "$output_reports", mode: 'copy', pattern: '*.html'
@@ -185,7 +179,6 @@ process ancestry {
 }
 
 process multiqc {
-    container '/well/gel/HICF2/software/singularity/QCbam-v1.0.sif'
     label 'singlecore'
     publishDir "$output_reports", mode: 'copy'
 
