@@ -11,6 +11,7 @@ params.sv_folder = "${params.out_folder}/SV"
 params.roh_folder = "${params.out_folder}/ROH"
 params.exphunter_folder = "${params.out_folder}/ExpHunter"
 params.mode = "WGS"
+params.run_mode = "multisample"
 
 params.help = false
 if (params.help) {
@@ -91,16 +92,21 @@ workflow {
     AF_file = tuple(file("${params.roh_AFfile}"), file("${params.roh_AFfile}.csi"))
     genetic_maps = file("${params.roh_gmaps}/*.txt")
     variant_catalog = file(params.exphunter_catalog)
-
+    
+    exclude_regions = file("${params.sv_exclude_regions}")
+    lowcomplexity_regions = tuple(file("${params.sv_lowcomplexity}"), file("${params.sv_lowcomplexity}.tbi"))
+    mei_regions = tuple(file("${params.sv_mei_regions}"), file("${params.sv_mei_regions}.tbi"))
+    training_bedpe = file("${params.sv_training_bedpe}")
     align_dedup(fastqfiles, genome_data)
+    
     QC_bam(align_dedup.out.bamfiles, file(params.regions), file(params.somalier_data), ref_genome)
     
     deepvariant(ref_genome, align_dedup.out.bamfiles)
     merge_gvcfs(deepvariant.out.gvcfs.collect())
     process_deepvariant_vcf(merge_gvcfs.out, ref_genome)
 
-    SV_singlesample(align_dedup.out.allbams, ref_genome, chrs_folder)
-    SV_mergesamples(SV_singlesample.out.root_files, SV_singlesample.out.vcfgt_files, sex_definitions)
+    SV_singlesample(align_dedup.out.allbams, ref_genome, exclude_regions, chrs_folder)
+    SV_mergesamples(SV_singlesample.out.root_files, SV_singlesample.out.vcfgt_files, sex_definitions,lowcomplexity_regions,mei_regions,training_bedpe)
 
     ROH_detection(process_deepvariant_vcf.out.pass_vcf, AF_file, genetic_maps)
 

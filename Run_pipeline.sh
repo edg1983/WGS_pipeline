@@ -8,4 +8,4 @@ mkdir -p $singularity_dir/tmp_dir
 export SINGULARITY_CACHEDIR=${singularity_dir}/cache_dir
 export SINGULARITY_TMPDIR=${singularity_dir}/tmp_dir
 
-$nextflow WGS_analysis.nf "$@" --singularity_basedir ${singularity_dir}
+$nextflow WGS_analysis.nf "$@"

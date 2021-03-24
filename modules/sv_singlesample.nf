@@ -74,7 +74,7 @@ workflow SV_singlesample {
         /* a tuple with [sampleID, file(bam_file), file(bai_file), file(split_bam), file(disc_bam)] */ 
         project
         ref_genome
-        exlude_regions
+        exclude_regions
         chrs_folder
         
     main:        
@@ -144,7 +144,7 @@ process lumpy {
     -pe id:${sampleID},bam_file:${disc_bam},histo_file:${histo_file},${lib_values},read_length:${read_length},min_non_overlap:${read_length},discordant_z:5,back_distance:10,weight:1,min_mapping_threshold:20 \
     -sr id:${sampleID},bam_file:${split_bam},back_distance:10,weight:1,min_mapping_threshold:20 \
     > lumpy.vcf
-    svtyper --verbose -B $bam_file -T $genome_fasta -i lumpy.vcf | bgzip -c > ${sampleID}_lumpy.gt.vcf.gz
+    svtyper-sso --cores 5 --batch-size 1000 -B $bam_file -T $genome_fasta -i lumpy.vcf | bgzip -c > ${sampleID}_lumpy.gt.vcf.gz
     """
 }
 

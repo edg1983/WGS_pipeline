@@ -134,7 +134,7 @@ process somalier {
     tuple file(genome_fasta), file(genome_index)
 
     output:
-    file("*.somalier")
+    file("${sample}.somalier")
 
     script:
     """  
@@ -148,7 +148,7 @@ process sex_and_relatedness {
     publishDir "$output_reports", mode: 'copy', pattern: '*.html'
     
     input:
-    file("*.somalier")
+    file("*")
     file("ped_file.ped")
 
     output:
@@ -166,7 +166,7 @@ process ancestry {
     publishDir "$output_reports", mode: 'copy', pattern: '*.html'
     
     input:
-    file("*.somalier")
+    file("*")
     path(somalier_data)
 
     output:

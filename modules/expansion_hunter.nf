@@ -99,6 +99,9 @@ process merge_vcf {
     output:
     file("ExpHunter_merged.vcf.gz")
 
+    when:
+        params.run_mode == "multisample"
+
     script:
     def input_vcfs = vcf_files.collect{ "$it" }.findAll{ !it.contains('tbi') }.join(" ")
     """
