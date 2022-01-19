@@ -7,7 +7,7 @@ The whole pipeline use singularity images and will pull images from singularity 
 The pipeline can be run directly using Nextflow >= v20.10.
 
 ```
-nextflow WGS_analysis.nf -profile cluster --operation align --input input_file.txt --mode WGS --ped ped_file.ped --cohort_id cohort_name --outdir results
+nextflow WGS_analysis.nf -profile cluster --operation align --input input_file.txt --mode WGS --ped ped_file.ped --ref genome.fa --cohort_id cohort_name --outdir results 
 ```
 
 The pipeline automatically infer the number of samples in the cohort from your input file and adjust the filtering accordingly. When more than one sample is present, small variants and structural variants from all samples are merged in cohort wide VCF files. 
@@ -20,7 +20,8 @@ Eventually update `singularity_cachedir` variable in `nextflow.config` to point 
 
 ```
 operation   :   align or call_variants
-mode        :   WGS or WES
+mode        :   WGS only supported at the moment
+ref         :   fasta file for the genome. Note that .fai and bwa index are expected in the same location
 input       :   tab-separated file describing input files. 
                 The exact format depends on operation requested (see below)
 ped         :   standard PED file containing all samples
@@ -88,6 +89,7 @@ sampleID3   main_bam.bam    disc.bam    split.bam
 
 ## Future developments
 
+- [] Support for WES
 - [] Update SV pipeline to Manta / dysgu 
 - [] Add duphold for SV quality check
 - [] Variant annotation
