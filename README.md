@@ -73,9 +73,10 @@ The pipeline generates a reach set of outputs including
 - aligned deduplicated BAM files
 - disc/split BAM files
 - Extensive QC of alignements, which includes mapping stats, coverage, relatedness, ancestry
-- Multi sample and single sample VCFs of small variants and structural variants
+- Multi sample and single sample VCFs of small variants and structural variants (variants are provided as raw calls and filtered calls)
 - Variants QC report for small variants
-- Variants are provided as raw calls and filtered calls
+- ROH regions
+- Repeat expansions by Expansion Hunter
 
 ## Pipeline components
 1. Alignement and duplicate marking
