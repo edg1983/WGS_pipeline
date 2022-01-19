@@ -14,8 +14,6 @@ The pipeline automatically infer the number of samples in the cohort from your i
 
 Eventually update `singularity_cachedir` variable in `nextflow.config` to point to a proper folder where singularity images are stored / will be downloaded
 
-**NB.** Various supporting files are needed and expected in the `resources` folder. This path can be configured by changing the parameters in `config/resources_GRCh37/38.conf`. All files needed are provided in a Zenodo repository. Please refer to the README file in the resources folder. 
-
 ### Arguments
 
 ```
@@ -30,6 +28,12 @@ outdir      :   output folder for results
 ```
 
 Use `--operation align/call_variants --help` for more explanations. 
+
+## Resources
+
+Various supporting files are needed and expected in the `resources` folder. This path can be configured by changing the parameters in `config/resources_GRCh37/38.conf`. All files needed are provided in a Zenodo repository. Please refer to the README file in the resources folder. 
+
+**NB.** The available resources are based on GRCh37 with standard chromosomes `1..22 X Y MT` and GRCh38 using `chr1..22 chrX chrY chrM`. Be sure the genome reference file passed with `--ref` matches the expected nomenclature for your genome build.
 
 ## Input files format
 ### PED file
@@ -101,8 +105,8 @@ The pipeline generates a reach set of outputs including
 
 ## Future developments
 
-- [ ] Support for WES
 - [ ] Update SV pipeline to Manta / dysgu 
 - [ ] Add duphold for SV quality check
 - [ ] Variant annotation
-- [ ] Segregation analysis
+- [ ] Segregation analysis with slivar
+- [ ] Support for WES?
