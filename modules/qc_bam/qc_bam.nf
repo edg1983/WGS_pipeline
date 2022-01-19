@@ -120,7 +120,7 @@ process somalier {
 
     script:
     """  
-    somalier extract -d ./ -f $genome_fasta -s ${somalier_data}/somalier_varsets/sites.hg38.vcf.gz $bam_file
+    somalier extract -d ./ -f $genome_fasta -s ${somalier_data}/somalier_varsets/sites.${params.build}.vcf.gz $bam_file
     """
 }
 

@@ -54,7 +54,7 @@ workflow SV_CALL_SVTOOLS {
         // When single sample combine CNVnator and lumpy output
         if (params.samplesize == 1) {
             lumpy_root_ch = SVTYPER.out.join(CNVNATOR.out)
-            SVTOOLS_CN(single_sample_ch)
+            SVTOOLS_CN(lumpy_root_ch)
             FIX_SVTOOLS_VCF(SVTOOLS_CN.out)
         } else {
             // When multiple samples merge calls from all samples using svtools pipeline

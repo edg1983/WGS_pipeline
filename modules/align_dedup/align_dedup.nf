@@ -4,7 +4,7 @@ params.outdir = 'BAM'
 output_bam = file(params.outdir)
 output_bam.mkdirs()
 
-include { BWA           } from './software/bwa'
+include { BWA_${params.build} as BWA   } from './software/bwa'
 include { MERGE_BAMS    } from './software/samtools_merge'
 include { SAMBLASTER    } from './software/samblaster' addParams( outdir: params.outdir)
 include { SORT_BAM      } from './software/samtools_sort'   addParams( outdir: params.outdir)
@@ -23,9 +23,9 @@ workflow ALIGN_DEDUP {
 
         bam_publish_paths = SORT_BAM.out.all_bams
             .map { it -> return it[0]+\
-            "\t"+output_bam.Parent+"/"+it[1].getName()+\
-            "\t"+output_bam.Parent+"/"+it[2].getName()+\
-            "\t"+output_bam.Parent+"/"+it[3].getName() }
+            "\t"+output_bam+"/"+it[1].getName()+\
+            "\t"+output_bam+"/"+it[2].getName()+\
+            "\t"+output_bam+"/"+it[3].getName() }
   
     emit:
         // tuple val(sample), file(bam), file(discbam), file(splitbam)

@@ -23,12 +23,19 @@ process DEEPVARIANT {
 
     output:
         path "*.g.vcf.gz", emit: gvcf
+        path "*.g.vcf.gz.tbi", emit: gvcf_tbi
         tuple val("${sampleID}"), file("${sampleID}.vcf.gz"), file("${sampleID}.vcf.gz.tbi"), emit: vcf
         path "*.html", emit: html
 
     script:
-    STDCHRS = (1..22).collect { "chr$it"}.join(' ')
-    STDCHRS = "$STDCHRS chrX chrY chrM"
+    if (params.build == "GRCh38") {
+        STDCHRS = (1..22).collect { "chr$it"}.join(' ')
+        STDCHRS = "$STDCHRS chrX chrY chrM"
+    }
+    if (params.build == "GRCh37") {
+        STDCHRS = (1..22).collect { "$it"}.join(' ')
+        STDCHRS = "$STDCHRS X Y MT"
+    }
 
     """
     mkdir temp_dir && \

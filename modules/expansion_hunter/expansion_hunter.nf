@@ -28,7 +28,7 @@ workflow EXPANSION_HUNTER_CALLS {
 }
 
 process expansion_hunter {
-    label 'singlecore'
+    label 'lowcores'
     publishDir "$params.outdir", mode: 'copy'
 
     input:
@@ -47,6 +47,7 @@ process expansion_hunter {
     --reference $genome_fasta \
     --variant-catalog $variant_catalog \
     --sex $sex \
+    --threads 5 \
     --output-prefix $sample 2> ${sample}.log
     """
 }

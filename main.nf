@@ -3,6 +3,7 @@ nextflow.enable.dsl=2
 // Define allowed options
 def allowed_ops         = ['align', 'call_variants']
 def allowed_modes       = ['WGS','WES']
+def allowed_builds       = ['GRCh38','GRCh37']
 
 // Default values for main output params are defined in config
 
@@ -17,6 +18,7 @@ println """\
     NB. This pipeline works for hg38 only
 
     --operation             :   Operation to run. Values: ${allowed_ops.join(', ')}
+    --build                 :   Genome build: Values: ${allowed_builds.join(', ')}
     --input input_file.txt  :   A tab-delimited text file describing input files
                                 Exact format depend on the operation
     --ped ped_file.ped      :   A standard ped file describing all samples
@@ -35,12 +37,14 @@ exit 1
 if (!params.cohort_id && params.operation == "call_variants") {
     exit 1, "Cohort ID not set, please use --cohort_id"
 }
+if (!params.build) {
+    exit 1, "Genome build not set, please use --build"
+}
 
 log.info """\
     =============================================
     WGS analysis pipeline - N F   P I P E L I N E    
     =============================================
-    This pipeline works for hg38 only
 
     operation   : ${params.operation}
     mode        : ${params.mode}
@@ -60,6 +64,10 @@ if (!allowed_ops.contains(params.operation)) {
 
 if (!allowed_modes.contains(params.mode)) {
     exit 1, "Invalid mode: ${params.mode}. Valid options: ${allowed_modes.join(', ')}"
+}
+
+if (!allowed_builds.contains(params.build)) {
+    exit 1, "Invalid genome build: ${params.build}. Valid options: ${allowed_builds.join(', ')}"
 }
 
 // Check input file exists 
@@ -141,7 +149,7 @@ workflow {
         fastqfiles = Channel
                    .from(projectFile)
                    .splitCsv(header: false, sep: '\t')
-                   .map{row -> return tuple(row[0], file(row[1]), file(row[2]))}
+                   .map{row -> return tuple(row[0], file(row[1], checkIfExists: true), file(row[2], checkIfExists: true))}
 
         genome_file = file(params.ref)
         genome_base = genome_file.getBaseName()
@@ -166,7 +174,7 @@ workflow {
             params.input, params.ref, params.ped,
             params.sv_exclude_regions, params.sv_lowcomplexity, params.sv_mei_regions,
             params.sv_mei_regions, params.sv_training_bedpe,
-            params.chrs_folder, params.somalier_data,
+            params.chrs_folder,
             params.roh_AFfile, params.roh_gmaps,
             params.exphunter_catalog
         ]
@@ -174,17 +182,17 @@ workflow {
 
     
         //Set input channels
-        pedFile = file(params.ped)
+        pedFile = file(params.ped, checkIfExists: true)
         chrs_folder = file(params.chrs_folder)
-        ref_genome = tuple(file("${params.ref}"), file("${params.ref}.fai"))
+        ref_genome = tuple(file("${params.ref}", checkIfExists: true), file("${params.ref}.fai"))
         regular_bam = Channel
                    .from(projectFile)
                    .splitCsv(header: false, sep: '\t')
-                   .map{row -> return tuple(row[0], file(row[1]), file(row[1]+".bai"))}
+                   .map{row -> return tuple(row[0], file(row[1], checkIfExists: true), file(row[1]+".bai"))}
         discsplit_bam = Channel
                    .from(projectFile)
                    .splitCsv(header: false, sep: '\t')
-                   .map{row -> return tuple(row[0], file(row[1]), file(row[1]+".bai"), file(row[2]), file(row[3]))}
+                   .map{row -> return tuple(row[0], file(row[1], checkIfExists: true), file(row[1]+".bai"), file(row[2], checkIfExists: true), file(row[3], checkIfExists: true))}
         AF_file = tuple(file("${params.roh_AFfile}"), file("${params.roh_AFfile}.csi"))
         genetic_maps = file("${params.roh_gmaps}/*.txt")
         variant_catalog = file(params.exphunter_catalog)

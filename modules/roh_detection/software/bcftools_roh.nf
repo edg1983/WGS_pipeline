@@ -17,6 +17,6 @@ process BCFTOOLS_ROH {
 
     script:
     """
-    bcftools roh -s $sampleID --AF-file $AF_file -m {CHROM}.genetic_map_hg38.txt -Or -o ${sampleID}_ROH.txt $vcf_file
+    bcftools roh -s $sampleID --AF-file $AF_file -m {CHROM}.genetic_map.txt -Or -o ${sampleID}_ROH.txt $vcf_file
     """
 }

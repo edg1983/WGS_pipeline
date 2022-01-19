@@ -12,8 +12,14 @@ process CNVNATOR {
         tuple val(sampleID), file("${sampleID}.root")
 
     script:
-    STDCHRS = (1..22).collect { "chr$it"}.join(' ')
-    STDCHRS = "$STDCHRS chrX chrY chrM"
+    if (params.build == "GRCh38") {
+        STDCHRS = (1..22).collect { "chr$it"}.join(' ')
+        STDCHRS = "$STDCHRS chrX chrY chrM"
+    }
+    if (params.build == "GRCh37") {
+        STDCHRS = (1..22).collect { "$it"}.join(' ')
+        STDCHRS = "$STDCHRS X Y MT"
+    }
     
     """
     cnvnator -root ${sampleID}.root -chrom $STDCHRS -tree $bam_file

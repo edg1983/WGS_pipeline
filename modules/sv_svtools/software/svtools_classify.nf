@@ -25,7 +25,7 @@ process SVTOOLS_CLASSIFY_LARGESAMPLE {
     """     
 }
 
-process SVTOOLS_CLASSIFY_SINGLESAMPLE {
+process SVTOOLS_CLASSIFY_SMALLSAMPLE {
     label 'singlecore'
     publishDir "$params.outdir", mode: 'copy', pattern: '*.classify.vcf.gz'
 

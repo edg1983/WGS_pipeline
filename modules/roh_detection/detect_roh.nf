@@ -16,7 +16,7 @@ workflow ROH_DETECTION {
     take: 
         vcf_file /* a tuple with vcf_file and its index */
         AF_file /* a tuple with AF tab file and its index */
-        genetic_maps /* a series of files {chrom}.genetic_map_hg38.txt */
+        genetic_maps /* a series of files {chrom}.genetic_map.txt */
 
     main:
         getSampleIDs(vcf_file)
