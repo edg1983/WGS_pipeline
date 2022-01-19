@@ -1,7 +1,7 @@
 # WGS analysis pipeline
 WGS analysis pipeline. Can handle both WGS and WES data.
 
-The whole pipeline use singularity images and will pull images from singularity library when needed
+The whole pipeline use singularity images and will pull images from singularity library when needed. Singularity recipes used are provided in `singularity` folder for reference.
 
 ## How to run
 The pipeline can be run directly using Nextflow >= v20.10.
@@ -64,7 +64,18 @@ sampleID2   main_bam.bam    disc.bam    split.bam
 sampleID3   main_bam.bam    disc.bam    split.bam
 ```
 
-`disc` and `split` BAM files are files containing only discordant pair and split reads like the ones that can be obtained using Samblaster
+`disc` and `split` BAM files are files containing only discordant pair and split reads like the 
+ones that can be obtained using Samblaster
+
+## Output
+
+The pipeline generates a reach set of outputs including
+- aligned deduplicated BAM files
+- disc/split BAM files
+- Extensive QC of alignements, which includes mapping stats, coverage, relatedness, ancestry
+- Multi sample and single sample VCFs of small variants and structural variants
+- Variants QC report for small variants
+- Variants are provided as raw calls and filtered calls
 
 ## Pipeline components
 1. Alignement and duplicate marking
@@ -89,8 +100,8 @@ sampleID3   main_bam.bam    disc.bam    split.bam
 
 ## Future developments
 
-- [] Support for WES
-- [] Update SV pipeline to Manta / dysgu 
-- [] Add duphold for SV quality check
-- [] Variant annotation
-- [] Segregation analysis
+- [ ] Support for WES
+- [ ] Update SV pipeline to Manta / dysgu 
+- [ ] Add duphold for SV quality check
+- [ ] Variant annotation
+- [ ] Segregation analysis
