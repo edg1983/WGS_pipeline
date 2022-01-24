@@ -9,7 +9,7 @@ def allowed_builds       = ['GRCh38','GRCh37']
 
 // Print help message when --help is used
 params.help = false
-if (params.help) {
+if (params.help || params.operation == "help") {
 println "help"
 
 println """\

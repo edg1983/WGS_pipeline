@@ -4,7 +4,11 @@ params.outdir = 'BAM'
 output_bam = file(params.outdir)
 output_bam.mkdirs()
 
-include { BWA_${params.build} as BWA   } from './software/bwa'
+if (params.build == "GRCh37") {
+    include { BWA_GRCh37 as BWA   } from './software/bwa'
+} else if (params.build == "GRCh37") {
+    include { BWA_GRCh38 as BWA   } from './software/bwa'
+}
 include { MERGE_BAMS    } from './software/samtools_merge'
 include { SAMBLASTER    } from './software/samblaster' addParams( outdir: params.outdir)
 include { SORT_BAM      } from './software/samtools_sort'   addParams( outdir: params.outdir)
