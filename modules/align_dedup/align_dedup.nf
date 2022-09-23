@@ -6,7 +6,7 @@ output_bam.mkdirs()
 
 if (params.build == "GRCh37") {
     include { BWA_GRCh37 as BWA   } from './software/bwa'
-} else if (params.build == "GRCh37") {
+} else if (params.build == "GRCh38") {
     include { BWA_GRCh38 as BWA   } from './software/bwa'
 }
 include { MERGE_BAMS    } from './software/samtools_merge'
